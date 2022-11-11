@@ -14,7 +14,11 @@ def get_rankings(year:int, month:str, day:int):
         - day (int): the day when the rankings were posted.
     """
 
-    source = requests.get(f"https://www.hltv.org/ranking/teams/{year}/{month}/{day}").text
+    try:
+        source = requests.get(f"https://www.hltv.org/ranking/teams/{year}/{month}/{day}").text
+    except requests.exceptions.RequestException as error:
+        raise SystemExit(error)
+
     soup = BeautifulSoup(source, "lxml")
 
     world_ranking = soup.find("div", class_="ranking")
