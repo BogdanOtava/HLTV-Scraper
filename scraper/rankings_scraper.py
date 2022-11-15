@@ -1,7 +1,9 @@
 from bs4 import BeautifulSoup
 from config import DATA
+from logger import logger
 import pandas as pd
 import requests
+import time
 import os
 
 def get_rankings(year:int, month:str, day:int):
@@ -21,12 +23,12 @@ def get_rankings(year:int, month:str, day:int):
 
     soup = BeautifulSoup(source, "lxml")
 
-    world_ranking = soup.find("div", class_="ranking")
+    rankings = soup.find_all("div", class_="ranked-team standard-box")
 
     attributes = []
     columns = ["rank", "team_name", "points", "players"]
 
-    for team in world_ranking.find_all("div", class_="ranked-team standard-box"):
+    for team in rankings:
 
         team_ranking = team.find("span", class_="position").text.replace("#", "")
         team_name = team.find("span", class_="name").text
@@ -40,6 +42,8 @@ def get_rankings(year:int, month:str, day:int):
         # appends a list of the scraped data to the 'attributes' list
         attributes.append([team_ranking, team_name, team_points, players])
 
+    logger.info(f"Successfully scraped the HLTV World Rankings from {day}-{month}-{year}.")
+
     # create a new dataframe out of the scraped data and then export it as a CSV file
     data = pd.DataFrame(attributes, columns=columns)
 
@@ -47,3 +51,5 @@ def get_rankings(year:int, month:str, day:int):
         os.makedirs(f"{DATA}/rankings")
 
     data.to_csv(f"{DATA}/rankings/{year}_{month}_{day}.csv", index=False)
+
+    logger.info(f"Scraped data was exported in 'data/rankings/{year}_{month}_{day}.csv'.")

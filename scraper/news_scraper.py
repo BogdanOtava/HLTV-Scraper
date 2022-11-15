@@ -1,6 +1,7 @@
 from url_shortener import shorten_url
 from bs4 import BeautifulSoup
 from config import DATA
+from logger import logger
 import pandas as pd
 import requests
 import os
@@ -21,12 +22,13 @@ def get_news(year:int, month:str) -> pd.DataFrame:
 
     soup = BeautifulSoup(source, "lxml")
 
-    news = soup.find("div", class_="standard-box standard-list")
+    news = soup.find_all("a", class_="newsline article", href=True)
 
     attributes = []
     columns = ["date", "title", "link"]
+    count = 0
 
-    for article in news.find_all("a", href=True):
+    for article in news:
 
         title = article.find("div", class_="newstext").text
         date = article.find("div", class_="newsrecent").text
@@ -38,6 +40,11 @@ def get_news(year:int, month:str) -> pd.DataFrame:
         # append a list of the scraped data to the 'attributes' list
         attributes.append([date, title, short_link])
 
+        count += 1
+        logger.debug(f"Article(s) scraped: {count}...")
+
+    logger.info(f"Successfully scraped {count} articles from {month} {year}.")
+
     # create a new dataframe out of the scraped data and then export it as a CSV file
     data = pd.DataFrame(attributes, columns=columns)
 
@@ -45,3 +52,5 @@ def get_news(year:int, month:str) -> pd.DataFrame:
         os.makedirs(f"{DATA}/news")
 
     data.to_csv(f"{DATA}/news/{year}_{month}.csv", index=False)
+
+    logger.info(f"Scraped data was exported in 'data/news/{year}_{month}.csv'.")
