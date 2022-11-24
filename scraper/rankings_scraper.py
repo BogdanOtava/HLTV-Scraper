@@ -6,7 +6,7 @@ import requests
 import time
 import os
 
-def get_rankings(year:int, month:str, day:int):
+def get_rankings(year:int, month:str, day:int) -> pd.DataFrame:
     """
     Returns a CSV file with the CS:GO World Rankings (rank, team name, points, players) according to HLTV for the given date. The rankings come out a few times a month, so it needs to be an exact date when the rankings were posted. The dates can be taken from the 'rankings' tab of the website.
 

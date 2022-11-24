@@ -1,6 +1,7 @@
+import pandas as pd
 import requests
 
-def get_statistics(start_date:str = "all", end_date:str = None, match_type:str = None, maps:list = None, team:str = None):
+def get_statistics(start_date:str = "all", end_date:str = None, match_type:str = None, maps:list = None, team:str = None) -> pd.DataFrame:
     """
     Returns a CSV file that contains the stats of players for the given filters.
 
