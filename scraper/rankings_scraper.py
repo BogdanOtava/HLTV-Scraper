@@ -3,7 +3,6 @@ from config import DATA
 from logger import logger
 import pandas as pd
 import requests
-import time
 import os
 
 def get_rankings(year:int, month:str, day:int) -> pd.DataFrame:
