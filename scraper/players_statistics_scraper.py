@@ -1,8 +1,12 @@
 from bs4 import BeautifulSoup
+from config import DATA
+from logger import logger
 import pandas as pd
 import requests
+import time
+import os
 
-def get_statistics(top:int = 10, start_date:str = "all", end_date:str = None, match_type:str = None, maps:list = None, team:str = None) -> pd.DataFrame:
+def get_player_statistics(top:int = 10, start_date:str = "all", end_date:str = None, match_type:str = None, maps:list = None, team:str = None) -> pd.DataFrame:
     """
     Returns a CSV file that contains the stats of players for the given filters, based on the rating of the players.
 
@@ -41,13 +45,30 @@ def get_statistics(top:int = 10, start_date:str = "all", end_date:str = None, ma
         player = attribute.find("a").text
         kd_difference = attribute.find("td", class_="kdDiffCol").text
         rating = attribute.find("td", class_="ratingCol").text
+
+        # the 'td' tag has three classnames that start with 'statsDetail' so I used list comprehension to get them
         items = [i.get_text() for i in attribute.find_all("td", class_="statsDetail")]
 
+        # append a list of each players data to the 'attributes' list
         attributes.append([player, items[0], items[1], kd_difference, items[2], rating])
+
+        count += 1
+        logger.debug(f"Players data scraped: {count}...")
+        time.sleep(0.5)
 
         top -= 1
 
         if top == 0:
             break
 
-    print(attributes)
+    logger.info(f"Successfully scraped the top {count} players statistics for the given parameters.")
+
+    # create a new dataframe out of the scraped data and then export it as a CSV file
+    data = pd.DataFrame(attributes, columns=columns)
+
+    if not os.path.isdir(f"{DATA}/players_statistics"):
+        os.makedirs(f"{DATA}/players_statistics")
+
+    data.to_csv(f"{DATA}/players_statistics/top_{count}_players.csv", index=False)
+
+    logger.info(f"Scraped data was exported in 'data/players_statistics/top_{count}_players.csv'.")

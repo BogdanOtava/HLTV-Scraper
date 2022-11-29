@@ -4,6 +4,7 @@ from config import DATA
 from logger import logger
 import pandas as pd
 import requests
+import time
 import os
 
 def get_news(year:int, month:str) -> pd.DataFrame:
@@ -41,7 +42,8 @@ def get_news(year:int, month:str) -> pd.DataFrame:
         attributes.append([date, title, short_link])
 
         count += 1
-        logger.debug(f"Article(s) scraped: {count}...")
+        logger.debug(f"Articles scraped: {count}...")
+        time.sleep(0.5)
 
     logger.info(f"Successfully scraped {count} articles from {month} {year}.")
 

@@ -3,9 +3,10 @@ from config import DATA
 from logger import logger
 import pandas as pd
 import requests
+import time
 import os
 
-def get_rankings(year:int, month:str, day:int) -> pd.DataFrame:
+def get_team_rankings(year:int, month:str, day:int) -> pd.DataFrame:
     """
     Returns a CSV file with the CS:GO World Rankings (rank, team name, points, players) according to HLTV for the given date. The rankings come out a few times a month, so it needs to be an exact date when the rankings were posted. The dates can be taken from the 'rankings' tab of the website.
 
@@ -26,6 +27,7 @@ def get_rankings(year:int, month:str, day:int) -> pd.DataFrame:
 
     attributes = []
     columns = ["rank", "team_name", "points", "players"]
+    count = 0
 
     for team in rankings:
 
@@ -41,14 +43,18 @@ def get_rankings(year:int, month:str, day:int) -> pd.DataFrame:
         # appends a list of the scraped data to the 'attributes' list
         attributes.append([team_ranking, team_name, team_points, players])
 
+        count += 1
+        logger.debug(f"Teams scraped: {count}...")
+        time.sleep(0.5)
+
     logger.info(f"Successfully scraped the HLTV World Rankings from {day}-{month}-{year}.")
 
     # create a new dataframe out of the scraped data and then export it as a CSV file
     data = pd.DataFrame(attributes, columns=columns)
 
-    if not os.path.exists(f"{DATA}/rankings"):
-        os.makedirs(f"{DATA}/rankings")
+    if not os.path.exists(f"{DATA}/team_rankings"):
+        os.makedirs(f"{DATA}/team_rankings")
 
-    data.to_csv(f"{DATA}/rankings/{year}_{month}_{day}.csv", index=False)
+    data.to_csv(f"{DATA}/team_rankings/{year}_{month}_{day}.csv", index=False)
 
-    logger.info(f"Scraped data was exported in 'data/rankings/{year}_{month}_{day}.csv'.")
+    logger.info(f"Scraped data was exported in 'data/team_rankings/{year}_{month}_{day}.csv'.")
