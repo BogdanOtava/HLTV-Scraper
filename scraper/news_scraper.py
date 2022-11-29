@@ -1,6 +1,6 @@
 from url_shortener import shorten_url
 from bs4 import BeautifulSoup
-from config import DATA
+from config import *
 from logger import logger
 import pandas as pd
 import requests
@@ -31,19 +31,24 @@ def get_news(year:int, month:str) -> pd.DataFrame:
 
     for article in news:
 
-        title = article.find("div", class_="newstext").text
-        date = article.find("div", class_="newsrecent").text
-        link = article["href"]
+        try:
+            title = article.find("div", class_="newstext").text
+            date = article.find("div", class_="newsrecent").text
+            link = article["href"]
 
-        # shorten url and add the website name and domain because the 'href' attribute doesn't include it
-        short_link = shorten_url(f"hltv.org{link}")
+            # shorten url and add the website name and domain because the 'href' attribute doesn't include it
+            short_link = shorten_url(f"hltv.org{link}")
 
-        # append a list of the scraped data to the 'attributes' list
-        attributes.append([date, title, short_link])
+        except BaseException:
+            logger.error("Could not scrape an article data...")
 
-        count += 1
-        logger.debug(f"Articles scraped: {count}...")
-        time.sleep(0.5)
+        else:
+            # append a list of the scraped data to the 'attributes' list
+            attributes.append([date, title, short_link])
+
+            count += 1
+            logger.debug(f"Articles scraped: {count}...")
+            time.sleep(TIME)
 
     logger.info(f"Successfully scraped {count} articles from {month} {year}.")
 

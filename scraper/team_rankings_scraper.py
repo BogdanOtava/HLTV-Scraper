@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from config import DATA
+from config import *
 from logger import logger
 import pandas as pd
 import requests
@@ -31,21 +31,24 @@ def get_team_rankings(year:int, month:str, day:int) -> pd.DataFrame:
 
     for team in rankings:
 
-        team_ranking = team.find("span", class_="position").text.replace("#", "")
-        team_name = team.find("span", class_="name").text
-        team_points = team.find("span", class_="points").text
+        try:
+            team_ranking = team.find("span", class_="position").text.replace("#", "")
+            team_name = team.find("span", class_="name").text
+            team_points = team.find("span", class_="points").text
 
-        players = []
+            # list of all 5 players for each team
+            players = [player.get_text() for player in team.find_all("div", class_="rankingNicknames")]
 
-        for player in team.find_all("div", class_="rankingNicknames"):
-            players.append(player.get_text())
+        except BaseException:
+            logger.error("Could not scrape a teams data...")
 
-        # appends a list of the scraped data to the 'attributes' list
-        attributes.append([team_ranking, team_name, team_points, players])
+        else:
+            # appends a list of the scraped data to the 'attributes' list
+            attributes.append([team_ranking, team_name, team_points, players])
 
-        count += 1
-        logger.debug(f"Teams scraped: {count}...")
-        time.sleep(0.5)
+            count += 1
+            logger.debug(f"Teams scraped: {count}...")
+            time.sleep(TIME)
 
     logger.info(f"Successfully scraped the HLTV World Rankings from {day}-{month}-{year}.")
 

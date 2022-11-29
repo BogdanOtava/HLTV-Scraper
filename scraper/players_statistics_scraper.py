@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from config import DATA
+from config import *
 from logger import logger
 import pandas as pd
 import requests
@@ -42,24 +42,30 @@ def get_player_statistics(top:int = 10, start_date:str = "all", end_date:str = N
 
     for attribute in table.find_all("tr"):
 
-        player = attribute.find("a").text
-        kd_difference = attribute.find("td", class_="kdDiffCol").text
-        rating = attribute.find("td", class_="ratingCol").text
+        try:
+            player = attribute.find("a").text
+            kd_difference = attribute.find("td", class_="kdDiffCol").text
+            rating = attribute.find("td", class_="ratingCol").text
 
-        # the 'td' tag has three classnames that start with 'statsDetail' so I used list comprehension to get them
-        items = [i.get_text() for i in attribute.find_all("td", class_="statsDetail")]
+            # the 'td' tag has three classnames that start with 'statsDetail' so I used list comprehension to get the text from them
+            items = [item.get_text() for item in attribute.find_all("td", class_="statsDetail")]
 
-        # append a list of each players data to the 'attributes' list
-        attributes.append([player, items[0], items[1], kd_difference, items[2], rating])
+        except BaseException:
+            logger.error("Could not scrape a players data...")
 
-        count += 1
-        logger.debug(f"Players data scraped: {count}...")
-        time.sleep(0.5)
+        else:
+            # append a list of each players data to the 'attributes' list
+            attributes.append([player, items[0], items[1], kd_difference, items[2], rating])
 
-        top -= 1
+            count += 1
+            logger.debug(f"Players data scraped: {count}...")
+            time.sleep(TIME)
 
-        if top == 0:
-            break
+        finally:
+            top -= 1
+
+            if top == 0:
+                break
 
     logger.info(f"Successfully scraped the top {count} players statistics for the given parameters.")
 
